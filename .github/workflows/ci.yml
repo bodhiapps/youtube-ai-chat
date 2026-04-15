@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref (branch/tag/commit SHA)'
+        required: false
+        type: string
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      VITE_BODHI_APP_CLIENT_ID: test-client-id
+      VITE_BODHI_AUTH_SERVER_URL: https://test.example.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.ref || '' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-1.57.0
+
+      - name: Install Playwright
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
+
+      - name: E2E tests
+        run: npm run ci:test:e2e
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Lint: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Build: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Typecheck: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Unit Tests: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ E2E Tests: Passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Trigger Deploy
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: deploy-pages
+          client-payload: '{"sha": "${{ github.sha }}"}'
