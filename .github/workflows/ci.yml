@@ -86,7 +86,7 @@ jobs:
 
       - name: Trigger Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: deploy-pages
           client-payload: '{"sha": "${{ github.sha }}"}'
