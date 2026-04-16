@@ -16,12 +16,20 @@ dist-ssr
 
 # Environment variables
 .env
+.env.test
+!.env.test.example
+!.env.example
 
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+e2e/test-results/
+e2e/.test-state.json
+e2e/bin/**
+!e2e/bin/**/
+!e2e/bin/**/.gitkeep
 
 # Editor directories and files
 .vscode/*

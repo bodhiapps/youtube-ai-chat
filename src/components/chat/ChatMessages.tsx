@@ -50,7 +50,6 @@ export default function ChatMessages({ messages, isStreaming, error }: ChatMessa
     }
   }, [messages, isStreaming]);
 
-  // Build a map of tool_call_id → tool result message
   const toolResults = useMemo(() => {
     const map = new Map<string, ChatMessage>();
     for (const msg of messages) {
@@ -59,6 +58,16 @@ export default function ChatMessages({ messages, isStreaming, error }: ChatMessa
       }
     }
     return map;
+  }, [messages]);
+
+  const turnByIndex = useMemo(() => {
+    const turns: number[] = [];
+    let userCount = 0;
+    for (const msg of messages) {
+      if (msg.role === 'user') userCount++;
+      turns.push(Math.max(0, userCount - 1));
+    }
+    return turns;
   }, [messages]);
 
   return (
@@ -84,18 +93,19 @@ export default function ChatMessages({ messages, isStreaming, error }: ChatMessa
           ) : (
             <>
               {messages.map((msg, index) => {
-                if (msg.role === 'tool') return null; // Rendered inline with tool calls
+                if (msg.role === 'tool') return null;
+                const turn = turnByIndex[index];
 
                 if (msg.role === 'assistant' && msg.tool_calls?.length) {
                   return (
                     <div key={index}>
-                      {msg.content && <MessageBubble message={msg} />}
+                      {msg.content && <MessageBubble message={msg} turn={turn} />}
                       <ToolCallMessage message={msg} toolResults={toolResults} />
                     </div>
                   );
                 }
 
-                return <MessageBubble key={index} message={msg} />;
+                return <MessageBubble key={index} message={msg} turn={turn} />;
               })}
               {isStreaming && !messages[messages.length - 1]?.content && (
                 <div data-testid="streaming-indicator" className="flex justify-start mb-4">
@@ -113,6 +123,17 @@ export default function ChatMessages({ messages, isStreaming, error }: ChatMessa
           )}
         </div>
       </div>
+      <div
+        data-testid="chat-processing"
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          left: -9999,
+          display: isStreaming ? 'block' : 'none',
+        }}
+      />
     </ScrollArea>
   );
 }
