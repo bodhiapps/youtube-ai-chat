@@ -4,8 +4,9 @@ import { streamSimple } from '@mariozechner/pi-ai';
 import { Agent } from '@mariozechner/pi-agent-core';
 import type { AgentEvent, AgentMessage, AgentTool, StreamFn } from '@mariozechner/pi-agent-core';
 import { getErrorMessage } from '@/lib/utils';
-import { buildModel, getServerUrlOrThrow, type ApiFormat } from '@/lib/agent-model';
+import { buildModel, getServerUrlOrThrow } from '@/lib/agent-model';
 import { fetchBodhiModels, type BodhiModelInfo } from '@/lib/bodhi-models';
+import type { ApiFormat } from '@bodhiapp/bodhi-js-react/api';
 
 const SENTINEL_API_KEY = 'bodhiapp_sentinel_api_key_ignored';
 

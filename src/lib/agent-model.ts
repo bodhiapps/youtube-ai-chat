@@ -1,8 +1,7 @@
 import type { Model } from '@mariozechner/pi-ai';
 import type { ClientState } from '@bodhiapp/bodhi-js-react';
 import { isDirectState } from '@bodhiapp/bodhi-js-react';
-
-export type ApiFormat = 'openai' | 'openai_responses' | 'anthropic' | 'anthropic_oauth' | 'gemini';
+import type { ApiFormat } from '@bodhiapp/bodhi-js-react/api';
 
 export type PiApi =
   | 'openai-completions'

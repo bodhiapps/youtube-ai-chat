@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import type { ApiFormat } from '@/lib/agent-model';
 import type { BodhiModelInfo } from '@/lib/bodhi-models';
+import type { ApiFormat } from '@bodhiapp/bodhi-js-react/api';
 
 interface ModelComboboxProps {
   models: BodhiModelInfo[];
