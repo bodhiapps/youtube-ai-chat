@@ -35,6 +35,8 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+      - name: Enable corepack (uses packageManager field)
+        run: corepack enable npm
       - run: npm ci
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
