@@ -4,7 +4,6 @@ import { defineConfig, devices } from '@playwright/test';
 const isCI = !!process.env.CI;
 const isHeadless = process.env.HEADLESS === 'true' || isCI;
 const baseURL = 'http://localhost:5173/youtube-ai-chat/';
-const BODHI_SERVER_URL = 'http://localhost:51135';
 
 function buildUserAgent(): string {
   const platform = os.platform();
@@ -45,8 +44,5 @@ export default defineConfig({
     command: 'npm run dev',
     url: baseURL,
     reuseExistingServer: !isCI,
-    env: {
-      VITE_BODHI_SERVER_URL: BODHI_SERVER_URL,
-    },
   },
 });

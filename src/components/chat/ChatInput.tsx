@@ -3,22 +3,18 @@ import { useBodhi } from '@bodhiapp/bodhi-js-react';
 import { Plus, RefreshCw, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import ModelCombobox from './ModelCombobox';
 import McpPopover from './McpPopover';
 import type { Mcp, McpTool } from '@/lib/mcp-tools';
+import type { ApiFormat } from '@/lib/agent-model';
+import type { BodhiModelInfo } from '@/lib/bodhi-models';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => Promise<void>;
   onClearMessages: () => void;
   selectedModel: string;
-  setSelectedModel: (model: string) => void;
-  models: string[];
+  setSelectedModel: (id: string, fmt: ApiFormat) => void;
+  models: BodhiModelInfo[];
   isLoadingModels: boolean;
   onRefreshModels: () => void;
   mcps: Mcp[];
@@ -108,25 +104,12 @@ export default function ChatInput({
               isLoading={isMcpsLoading}
             />
 
-            <Select
-              value={selectedModel}
-              onValueChange={setSelectedModel}
-              disabled={models.length === 0}
-            >
-              <SelectTrigger
-                data-testid="model-selector"
-                className="w-[240px] border-0 focus:ring-0"
-              >
-                <SelectValue placeholder="No models" />
-              </SelectTrigger>
-              <SelectContent>
-                {models.map(model => (
-                  <SelectItem key={model} value={model}>
-                    {model}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ModelCombobox
+              models={models}
+              selected={selectedModel}
+              onSelect={setSelectedModel}
+              disabled={isDisabled}
+            />
 
             <Button
               data-testid="btn-refresh-models"

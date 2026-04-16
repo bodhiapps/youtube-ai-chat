@@ -4,11 +4,11 @@ import { FULL_MODEL_ID, getTestState } from './tests/global-setup';
 
 test.describe('Demo Chat Application', () => {
   test('chat answers what day comes after monday with tuesday', async ({ page }) => {
-    const { username, password } = getTestState();
+    const { username, password, bodhiServerUrl } = getTestState();
 
     const chat = new ChatPage(page);
     await page.goto('/');
-    await chat.waitServerReady();
+    await chat.waitServerReady(bodhiServerUrl);
     await chat.login({ username, password });
     await chat.loadModels();
     await chat.selectModel(FULL_MODEL_ID);

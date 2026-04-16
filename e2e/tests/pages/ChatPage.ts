@@ -14,16 +14,41 @@ export class ChatPage {
     chatInput: '[data-testid="chat-input"]',
     sendButton: '[data-testid="send-button"]',
     modelSelector: '[data-testid="model-selector"]',
+    modelSearchInput: '[data-testid="model-search-input"]',
     refreshModels: '[data-testid="btn-refresh-models"]',
     chatProcessing: '[data-testid="chat-processing"]',
     message: (turn: number, role: string) =>
       `[data-testid="chat-message-turn-${turn}"][data-messagetype="${role}"]`,
   };
 
-  async waitServerReady(): Promise<void> {
+  async waitServerReady(bodhiServerUrl: string): Promise<void> {
     await this.page.locator(this.selectors.appTitle).waitFor();
+    await this.walkSetupModal(bodhiServerUrl);
     await this.page.locator(this.selectors.clientReady).waitFor();
     await this.page.locator(this.selectors.serverReady).waitFor();
+  }
+
+  private async walkSetupModal(bodhiServerUrl: string): Promise<void> {
+    await this.page.locator(this.selectors.setupIframe).waitFor({ state: 'attached' });
+    const iframe = this.page.frameLocator(this.selectors.setupIframe);
+
+    // Server step: tick "I have installed the Bodhi App Server"
+    const checkbox = iframe.getByTestId('server-confirm-checkbox');
+    await checkbox.waitFor();
+    await checkbox.click();
+
+    // Direct (LNA) step: fill URL and connect
+    const urlInput = iframe.getByTestId('lna-url-input');
+    await urlInput.waitFor();
+    await urlInput.fill(bodhiServerUrl);
+    await iframe.getByTestId('lna-connect-button').click();
+
+    // Complete step: dismiss modal via "Continue to Webpage"
+    const continueButton = iframe.getByTestId('continue-button');
+    await continueButton.waitFor();
+    await continueButton.click();
+
+    await this.page.locator(this.selectors.setupOverlay).waitFor({ state: 'hidden' });
   }
 
   async login(credentials: { username: string; password: string }): Promise<void> {
@@ -49,13 +74,6 @@ export class ChatPage {
     // context as the login above), redirecting back to the app via 302 chain.
     await this.page.waitForURL(/localhost:5173/);
     await this.page.locator(this.selectors.authenticated).waitFor();
-    await this.dismissSetupModal();
-  }
-
-  async dismissSetupModal(): Promise<void> {
-    const iframe = this.page.frameLocator(this.selectors.setupIframe);
-    await iframe.getByTestId('continue-button').click();
-    await this.page.locator(this.selectors.setupOverlay).waitFor({ state: 'detached' });
   }
 
   async loadModels(): Promise<void> {
@@ -67,7 +85,8 @@ export class ChatPage {
     const trigger = this.page.locator(this.selectors.modelSelector);
     await expect(trigger).toBeEnabled();
     await trigger.click();
-    await this.page.getByRole('option', { name: modelId, exact: true }).click();
+    await this.page.locator(this.selectors.modelSearchInput).fill(modelId);
+    await this.page.getByTestId(`model-option-${modelId}`).click();
     await expect(trigger).toContainText(modelId);
   }
 
